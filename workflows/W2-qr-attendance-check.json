@@ -1,0 +1,537 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "path": "event-checkin",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "0a456177-3c3d-408d-9caa-3fbe16279ed4",
+      "name": "QR Scan Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -880,
+        192
+      ],
+      "webhookId": "event-checkin-endpoint"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1UQhQhNokO1-AzIHxKuPFsX15PY_8kpRbdninrAsKfBY",
+          "mode": "list",
+          "cachedResultName": "n8n-master",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1UQhQhNokO1-AzIHxKuPFsX15PY_8kpRbdninrAsKfBY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Participants",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1UQhQhNokO1-AzIHxKuPFsX15PY_8kpRbdninrAsKfBY/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "participant_id",
+              "lookupValue": "={{$json.query.participant_id}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "5376bb1d-2817-452b-9ee3-be190cb7b8f8",
+      "name": "Lookup Participant",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -656,
+        192
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Jt4ztSmWtvy0enrU",
+          "name": "Google Sheets account"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{$json.participant_id}}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "93cdba23-f7ed-4bfe-a4c0-e74e2de67353",
+      "name": "IF Valid Participant?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -448,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{$json.attendance}}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "1b63eb2f-54d1-4453-8011-fee67ab0291a",
+      "name": "IF Already Checked In?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -224,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "s1",
+              "name": "checkin_time",
+              "type": "string",
+              "value": "={{$now.toISO()}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b7a0ccac-89e5-488e-a4f8-b7ee029394dc",
+      "name": "Timestamp Check-in",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1UQhQhNokO1-AzIHxKuPFsX15PY_8kpRbdninrAsKfBY",
+          "mode": "list",
+          "cachedResultName": "n8n-master",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1UQhQhNokO1-AzIHxKuPFsX15PY_8kpRbdninrAsKfBY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Participants",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1UQhQhNokO1-AzIHxKuPFsX15PY_8kpRbdninrAsKfBY/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "participant_id": "={{$('Lookup Participant').item.json.participant_id}}",
+            "attendance": "true",
+            "checkin_time": "={{$json.checkin_time}}",
+            "row_number": 0
+          },
+          "matchingColumns": [
+            "participant_id"
+          ],
+          "schema": [
+            {
+              "id": "participant_id",
+              "displayName": "participant_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "full_name",
+              "displayName": "full_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "registered_at",
+              "displayName": "registered_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "attendance",
+              "displayName": "attendance",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "checkin_time",
+              "displayName": "checkin_time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "reminder_sent",
+              "displayName": "reminder_sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "certificate_sent",
+              "displayName": "certificate_sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "c28c6313-e7e7-4f13-ba74-0213df672098",
+      "name": "Update Attendance Record",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        224,
+        0
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Jt4ztSmWtvy0enrU",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"status\": \"success\", \"message\": \"Checked in\", \"name\": \"{{$('Lookup Participant').item.json.full_name}}\"}",
+        "options": {}
+      },
+      "id": "c2a9a58b-ee5e-4a5b-95d7-3ed5a1c0598e",
+      "name": "Respond Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.2,
+      "position": [
+        448,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"status\": \"error\", \"message\": \"Already checked in\"}",
+        "options": {}
+      },
+      "id": "bfa3e82c-e18b-45da-9b37-510451909515",
+      "name": "Respond Duplicate Checkin",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"status\": \"error\", \"message\": \"Participant not found - invalid QR\"}",
+        "options": {}
+      },
+      "id": "b5aad452-8dd7-4017-a8c3-37dc0b4bbfe1",
+      "name": "Respond Invalid QR",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.2,
+      "position": [
+        -224,
+        368
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1UQhQhNokO1-AzIHxKuPFsX15PY_8kpRbdninrAsKfBY",
+          "mode": "list",
+          "cachedResultName": "n8n-master",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1UQhQhNokO1-AzIHxKuPFsX15PY_8kpRbdninrAsKfBY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 106243496,
+          "mode": "list",
+          "cachedResultName": "audit log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1UQhQhNokO1-AzIHxKuPFsX15PY_8kpRbdninrAsKfBY/edit#gid=106243496"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "workflow": "W2 - QR Attendance",
+            "event_type": "invalid_qr_scan",
+            "detail": "={{$json.body.participant_id}}",
+            "timestamp": "={{$now.toISO()}}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "workflow",
+              "displayName": "workflow",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_type",
+              "displayName": "event_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "detail",
+              "displayName": "detail",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "3c6b1192-f29f-4cb4-ad8e-cfd289f065c0",
+      "name": "Log Invalid Scan to Audit",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -448,
+        368
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Jt4ztSmWtvy0enrU",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "QR Scan Webhook": {
+      "main": [
+        [
+          {
+            "node": "Lookup Participant",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lookup Participant": {
+      "main": [
+        [
+          {
+            "node": "IF Valid Participant?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Valid Participant?": {
+      "main": [
+        [
+          {
+            "node": "IF Already Checked In?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log Invalid Scan to Audit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Already Checked In?": {
+      "main": [
+        [
+          {
+            "node": "Respond Duplicate Checkin",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Timestamp Check-in",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Timestamp Check-in": {
+      "main": [
+        [
+          {
+            "node": "Update Attendance Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Attendance Record": {
+      "main": [
+        [
+          {
+            "node": "Respond Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Invalid Scan to Audit": {
+      "main": [
+        [
+          {
+            "node": "Respond Invalid QR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "044b919db7625d2fee76928ddaf54d2be298128dfeeb9b1ab1addc1672c96a41"
+  }
+}

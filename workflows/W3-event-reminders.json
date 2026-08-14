@@ -1,0 +1,472 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "id": "f4bc2e16-86ea-45a5-a946-da4b582e6c88",
+      "name": "Hourly Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1680,
+        -368
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1UQhQhNokO1-AzIHxKuPFsX15PY_8kpRbdninrAsKfBY",
+          "mode": "list",
+          "cachedResultName": "n8n-master",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1UQhQhNokO1-AzIHxKuPFsX15PY_8kpRbdninrAsKfBY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1562470948,
+          "mode": "list",
+          "cachedResultName": "Sessions ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1UQhQhNokO1-AzIHxKuPFsX15PY_8kpRbdninrAsKfBY/edit#gid=1562470948"
+        },
+        "options": {}
+      },
+      "id": "bdeea85f-883f-4878-a0cb-59350b4b4ee0",
+      "name": "Read Upcoming Sessions",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -1456,
+        -368
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Jt4ztSmWtvy0enrU",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.session_start_hours_from_now }}",
+              "rightValue": 24,
+              "operator": {
+                "type": "number",
+                "operation": "lte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "bb3e48da-f98f-4748-a2fc-4725c9541169",
+      "name": "Filter Sessions Within Reminder Window",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -1232,
+        -368
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1UQhQhNokO1-AzIHxKuPFsX15PY_8kpRbdninrAsKfBY",
+          "mode": "list",
+          "cachedResultName": "n8n-master",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1UQhQhNokO1-AzIHxKuPFsX15PY_8kpRbdninrAsKfBY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Participants",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1UQhQhNokO1-AzIHxKuPFsX15PY_8kpRbdninrAsKfBY/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "session_choice",
+              "lookupValue": "={{$json.session_id}}"
+            },
+            {
+              "lookupColumn": "reminder_sent",
+              "lookupValue": "false"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "09c29820-85ea-47b8-9081-b5c0edf438d9",
+      "name": "Get Registered Participants",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -1008,
+        -368
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Jt4ztSmWtvy0enrU",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{$json.email}}",
+        "subject": "=Reminder: your session starts soon",
+        "message": "=Hi {{$json.full_name}},<br><br>This is a reminder that your session \"{{$json.session_choice}}\" starts within 24 hours.<br>Don't forget to bring your QR code for check-in.<br><br>See you there!",
+        "options": {}
+      },
+      "id": "98292a68-7d79-4d32-b8d5-0b7295b11612",
+      "name": "Send Reminder Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -544,
+        -352
+      ],
+      "webhookId": "664f0eb5-6b18-4500-a740-c1e13c616d6f",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "HNwfOrqSg1tgqVVO",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "id": "2fa8e528-b93b-4e45-abb9-66768a074503",
+      "name": "Wait (Rate Limit Guard)",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -352,
+        -352
+      ],
+      "webhookId": "043b5f8b-33dc-4ab1-aeef-7de59e263cfd"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1UQhQhNokO1-AzIHxKuPFsX15PY_8kpRbdninrAsKfBY",
+          "mode": "list",
+          "cachedResultName": "n8n-master",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1UQhQhNokO1-AzIHxKuPFsX15PY_8kpRbdninrAsKfBY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Participants",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1UQhQhNokO1-AzIHxKuPFsX15PY_8kpRbdninrAsKfBY/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "participant_id": "={{$('Get Registered Participants').item.json.participant_id}}",
+            "reminder_sent": "true",
+            "row_number": 0
+          },
+          "matchingColumns": [
+            "participant_id"
+          ],
+          "schema": [
+            {
+              "id": "participant_id",
+              "displayName": "participant_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "full_name",
+              "displayName": "full_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "session_choice",
+              "displayName": "session_choice",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "registered_at",
+              "displayName": "registered_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "attendance",
+              "displayName": "attendance",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "checkin_time",
+              "displayName": "checkin_time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "reminder_sent",
+              "displayName": "reminder_sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "certificate_sent",
+              "displayName": "certificate_sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "e1be01c9-fc94-491f-857b-213bf2a40789",
+      "name": "Mark Reminder Sent",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -144,
+        -352
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Jt4ztSmWtvy0enrU",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1680,
+        -544
+      ],
+      "id": "4e85401f-67cb-488c-976b-0e5db2150823",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "batchSize": 10,
+        "options": {}
+      },
+      "id": "1311d3aa-2b13-43c9-8e35-cac8e469583e",
+      "name": "Loop Over Participants",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -784,
+        -368
+      ]
+    }
+  ],
+  "connections": {
+    "Hourly Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Read Upcoming Sessions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Upcoming Sessions": {
+      "main": [
+        [
+          {
+            "node": "Filter Sessions Within Reminder Window",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Sessions Within Reminder Window": {
+      "main": [
+        [
+          {
+            "node": "Get Registered Participants",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Registered Participants": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Participants",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Reminder Email": {
+      "main": [
+        [
+          {
+            "node": "Wait (Rate Limit Guard)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait (Rate Limit Guard)": {
+      "main": [
+        [
+          {
+            "node": "Mark Reminder Sent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark Reminder Sent": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Participants",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Read Upcoming Sessions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Participants": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Send Reminder Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "044b919db7625d2fee76928ddaf54d2be298128dfeeb9b1ab1addc1672c96a41"
+  }
+}

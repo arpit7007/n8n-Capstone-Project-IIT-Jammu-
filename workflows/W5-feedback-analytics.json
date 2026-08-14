@@ -1,0 +1,557 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1UQhQhNokO1-AzIHxKuPFsX15PY_8kpRbdninrAsKfBY",
+          "mode": "list",
+          "cachedResultName": "n8n-master",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1UQhQhNokO1-AzIHxKuPFsX15PY_8kpRbdninrAsKfBY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1148525282,
+          "mode": "list",
+          "cachedResultName": "Feedback Form Responses",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1UQhQhNokO1-AzIHxKuPFsX15PY_8kpRbdninrAsKfBY/edit#gid=1148525282"
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "id": "57d2bb6d-ad96-4db5-95c3-2fcd477238ce",
+      "name": "New Feedback Submitted",
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        112
+      ],
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "E36cnXylNlaAALfk",
+          "name": "Google Sheets Trigger account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f1",
+              "name": "participant_id",
+              "type": "string",
+              "value": "={{ $json['Email'].toLowerCase().trim() }}-{{ $json['Event'] }}"
+            },
+            {
+              "id": "f2",
+              "name": "rating",
+              "type": "number",
+              "value": "={{ $json['Rating'] }}"
+            },
+            {
+              "id": "f3",
+              "name": "comments",
+              "type": "string",
+              "value": "={{ $json['Comments'] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "23bfc8e2-edca-41ea-b6ca-30ef9de9a3e0",
+      "name": "Normalize Feedback",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are analyzing attendee feedback for an event.\nRating (1-5): {{ $json.rating }}\nComments: {{ $json.comments }}\n\nReturn the overall \"sentiment\" (one of: positive, neutral, negative) and a short \"theme\" (2-4 words) describing the main topic of the comment.",
+        "hasOutputParser": true,
+        "batching": {}
+      },
+      "id": "c588ce0f-6996-45a7-a1f6-a6f43e348ae8",
+      "name": "AI Sentiment & Theme Extraction",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        448,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "id": "9199b543-7030-4b52-a203-15d98e312771",
+      "name": "OpenAI Chat Model (Sentiment)",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        464,
+        336
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "4RIqJhyZPLod2cJC",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\"sentiment\":\"positive\",\"theme\":\"venue logistics\"}"
+      },
+      "id": "8fbd53ec-dd5c-46b1-beb7-4bbd2505764b",
+      "name": "Sentiment & Theme Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        624,
+        336
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1UQhQhNokO1-AzIHxKuPFsX15PY_8kpRbdninrAsKfBY",
+          "mode": "list",
+          "cachedResultName": "n8n-master",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1UQhQhNokO1-AzIHxKuPFsX15PY_8kpRbdninrAsKfBY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1614677602,
+          "mode": "list",
+          "cachedResultName": "Feedback ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1UQhQhNokO1-AzIHxKuPFsX15PY_8kpRbdninrAsKfBY/edit#gid=1614677602"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "participant_id": "={{ $('Normalize Feedback').item.json.participant_id }}",
+            "rating": "={{ $('Normalize Feedback').item.json.rating }}",
+            "comments": "={{ $('Normalize Feedback').item.json.comments }}",
+            "sentiment": "={{ $json.output.sentiment }}",
+            "theme": "={{ $json.output.theme }}",
+            "submitted_at": "={{ $now.toISO() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "participant_id",
+              "displayName": "participant_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "rating",
+              "displayName": "rating",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "comments",
+              "displayName": "comments",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sentiment",
+              "displayName": "sentiment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "theme",
+              "displayName": "theme",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "submitted_at",
+              "displayName": "submitted_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "c00247b5-ac80-4429-b07a-d392efe0e931",
+      "name": "Save Feedback with AI Tags",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        800,
+        112
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Jt4ztSmWtvy0enrU",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks"
+            }
+          ]
+        }
+      },
+      "id": "b2733660-fc3b-479d-b6af-a8f97b6e2e9d",
+      "name": "Weekly Report Schedule",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        544
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1UQhQhNokO1-AzIHxKuPFsX15PY_8kpRbdninrAsKfBY",
+          "mode": "list",
+          "cachedResultName": "n8n-master",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1UQhQhNokO1-AzIHxKuPFsX15PY_8kpRbdninrAsKfBY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Participants",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1UQhQhNokO1-AzIHxKuPFsX15PY_8kpRbdninrAsKfBY/edit#gid=0"
+        },
+        "options": {}
+      },
+      "id": "95259b85-dd32-437c-a573-0c0d3ea5abc8",
+      "name": "Read Registration & Attendance Data",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        224,
+        448
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Jt4ztSmWtvy0enrU",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "d194728c-a584-4c48-bd7e-25db20be1745",
+      "name": "Merge Registration + Feedback",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        448,
+        544
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1UQhQhNokO1-AzIHxKuPFsX15PY_8kpRbdninrAsKfBY",
+          "mode": "list",
+          "cachedResultName": "n8n-master",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1UQhQhNokO1-AzIHxKuPFsX15PY_8kpRbdninrAsKfBY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1614677602,
+          "mode": "list",
+          "cachedResultName": "Feedback ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1UQhQhNokO1-AzIHxKuPFsX15PY_8kpRbdninrAsKfBY/edit#gid=1614677602"
+        },
+        "options": {}
+      },
+      "id": "6b2a2d26-0a11-4ff9-b812-701029c114e8",
+      "name": "Read Feedback Data",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        224,
+        640
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Jt4ztSmWtvy0enrU",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const participants = $('Read Registration & Attendance Data').all().map(i => i.json);\nconst feedback = $('Read Feedback Data').all().map(i => i.json);\nconst ratings = feedback.map(f => Number(f.rating)).filter(r => !isNaN(r));\nconst avgRating = ratings.length ? (ratings.reduce((a, b) => a + b, 0) / ratings.length) : null;\nreturn [{ json: {\n  participantCount: participants.length,\n  feedbackCount: feedback.length,\n  averageRating: avgRating,\n  participants,\n  feedback,\n} }];"
+      },
+      "id": "27949eb2-e206-43d3-9cbc-7b1aec3ee2cb",
+      "name": "Prepare Report Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        544
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an event analytics assistant. Write a concise weekly analytics report for the event organizers based on the data below.\n\nRegistered/attended participants: {{ $json.participantCount }}\nFeedback responses: {{ $json.feedbackCount }}\nAverage rating: {{ $json.averageRating }}\n\nParticipant data (JSON): {{ JSON.stringify($json.participants) }}\nFeedback data with AI sentiment/theme tags (JSON): {{ JSON.stringify($json.feedback) }}\n\nCover: overall attendance vs registration, feedback participation rate, sentiment breakdown, recurring themes, and 2-3 concrete recommendations. Use clear plain-text sections with headings.",
+        "batching": {}
+      },
+      "id": "0bcee023-5efa-490c-8c23-b8a37a141b1c",
+      "name": "AI Generate Analytics Summary",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        896,
+        544
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "id": "2077858f-6e04-46cd-a360-3bbd2e532303",
+      "name": "OpenAI Chat Model (Summary)",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        976,
+        768
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "4RIqJhyZPLod2cJC",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "razxr2203@gmail.com",
+        "subject": "=Weekly Event Analytics Report - {{ $now.toFormat(\"MMMM d, yyyy\") }}",
+        "emailType": "text",
+        "message": "={{ $json.text }}",
+        "options": {}
+      },
+      "id": "a27895f9-c3d4-4e7a-b34a-a666c5219fb8",
+      "name": "Email Analytics Report to Organizers",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1248,
+        544
+      ],
+      "webhookId": "7fca6ba4-8872-466d-a127-19c328327dcd",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "HNwfOrqSg1tgqVVO",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "New Feedback Submitted": {
+      "main": [
+        [
+          {
+            "node": "Normalize Feedback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Feedback": {
+      "main": [
+        [
+          {
+            "node": "AI Sentiment & Theme Extraction",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Sentiment & Theme Extraction": {
+      "main": [
+        [
+          {
+            "node": "Save Feedback with AI Tags",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model (Sentiment)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Sentiment & Theme Extraction",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sentiment & Theme Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Sentiment & Theme Extraction",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Weekly Report Schedule": {
+      "main": [
+        [
+          {
+            "node": "Read Registration & Attendance Data",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Read Feedback Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Registration & Attendance Data": {
+      "main": [
+        [
+          {
+            "node": "Merge Registration + Feedback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Registration + Feedback": {
+      "main": [
+        [
+          {
+            "node": "Prepare Report Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Feedback Data": {
+      "main": [
+        [
+          {
+            "node": "Merge Registration + Feedback",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Prepare Report Data": {
+      "main": [
+        [
+          {
+            "node": "AI Generate Analytics Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Generate Analytics Summary": {
+      "main": [
+        [
+          {
+            "node": "Email Analytics Report to Organizers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model (Summary)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Generate Analytics Summary",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "044b919db7625d2fee76928ddaf54d2be298128dfeeb9b1ab1addc1672c96a41"
+  }
+}

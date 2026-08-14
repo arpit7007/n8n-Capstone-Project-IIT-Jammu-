@@ -1,0 +1,510 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1UQhQhNokO1-AzIHxKuPFsX15PY_8kpRbdninrAsKfBY",
+          "mode": "list",
+          "cachedResultName": "n8n-master",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1UQhQhNokO1-AzIHxKuPFsX15PY_8kpRbdninrAsKfBY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 446041758,
+          "mode": "list",
+          "cachedResultName": "Registration",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1UQhQhNokO1-AzIHxKuPFsX15PY_8kpRbdninrAsKfBY/edit#gid=446041758"
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "id": "4603ccf9-4d1f-4baa-a3fd-b423d51f10b2",
+      "name": "New Registration (Google Sheets Trigger)",
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -112,
+        -256
+      ],
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "E36cnXylNlaAALfk",
+          "name": "Google Sheets Trigger account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1",
+              "name": "full_name",
+              "type": "string",
+              "value": "={{$json['Full Name']}}"
+            },
+            {
+              "id": "a2",
+              "name": "email",
+              "type": "string",
+              "value": "={{$json['Email'].toLowerCase().trim()}}"
+            },
+            {
+              "id": "a3",
+              "name": "phone",
+              "type": "string",
+              "value": "={{$json['Phone']}}"
+            },
+            {
+              "id": "a4",
+              "name": "event_id",
+              "type": "string",
+              "value": "={{$json['Event']}}"
+            },
+            {
+              "id": "a5",
+              "name": "session_choice",
+              "type": "string",
+              "value": "={{$json['Session']}}"
+            },
+            {
+              "id": "a6",
+              "name": "participant_id",
+              "type": "string",
+              "value": "={{$json['Email'].toLowerCase().trim()}}-{{$json['Event']}}"
+            },
+            {
+              "id": "a7",
+              "name": "registered_at",
+              "type": "string",
+              "value": "={{$now.toISO()}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b8f18003-5ce4-45c8-bb2b-4ac21ebc1426",
+      "name": "Normalize Participant Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        112,
+        -256
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1UQhQhNokO1-AzIHxKuPFsX15PY_8kpRbdninrAsKfBY",
+          "mode": "list",
+          "cachedResultName": "n8n-master",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1UQhQhNokO1-AzIHxKuPFsX15PY_8kpRbdninrAsKfBY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Participants",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1UQhQhNokO1-AzIHxKuPFsX15PY_8kpRbdninrAsKfBY/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "participant_id",
+              "lookupValue": "={{$json.participant_id}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "01fd4157-5a39-4e0a-b6fc-55303241a332",
+      "name": "Check Duplicate Registration",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        336,
+        -256
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Jt4ztSmWtvy0enrU",
+          "name": "Google Sheets account"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{$json.participant_id}}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "41487811-2956-4046-937e-cffdb96836fc",
+      "name": "IF Already Registered?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        560,
+        -256
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1UQhQhNokO1-AzIHxKuPFsX15PY_8kpRbdninrAsKfBY",
+          "mode": "list",
+          "cachedResultName": "n8n-master",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1UQhQhNokO1-AzIHxKuPFsX15PY_8kpRbdninrAsKfBY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Participants",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1UQhQhNokO1-AzIHxKuPFsX15PY_8kpRbdninrAsKfBY/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "participant_id": "={{$('Normalize Participant Data').item.json.participant_id}}",
+            "full_name": "={{$('Normalize Participant Data').item.json.full_name}}",
+            "email": "={{$('Normalize Participant Data').item.json.email}}",
+            "attendance": "false",
+            "certificate_sent": "false",
+            "phone": "={{$('Normalize Participant Data').item.json.phone}}",
+            "event_id": "={{$('Normalize Participant Data').item.json.event_id}}",
+            "registered_at": "={{$('Normalize Participant Data').item.json.registered_at}}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "participant_id",
+              "displayName": "participant_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "full_name",
+              "displayName": "full_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "registered_at",
+              "displayName": "registered_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "attendance",
+              "displayName": "attendance",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "checkin_time",
+              "displayName": "checkin_time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "reminder_sent",
+              "displayName": "reminder_sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "certificate_sent",
+              "displayName": "certificate_sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "b1ebec77-d123-45cd-a8c1-2407c1bd13cb",
+      "name": "Save New Participant",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        784,
+        -352
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Jt4ztSmWtvy0enrU",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https://cool-1234.app.n8n.cloud/webhook/event-checkin?participant_id={{$('Normalize Participant Data').item.json.participant_id}}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "c4ec5247-58a9-472c-a21c-6dc32a6039a1",
+      "name": "Generate QR Code",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1008,
+        -352
+      ]
+    },
+    {
+      "parameters": {
+        "name": "=qr_{{$('Normalize Participant Data').item.json.participant_id}}.png",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive",
+          "cachedResultName": "My Drive",
+          "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1PjKG3yROu5szkLJ9zqY7Kng68G9-CO7t",
+          "mode": "list",
+          "cachedResultName": "khuchToHaiYaar",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1PjKG3yROu5szkLJ9zqY7Kng68G9-CO7t"
+        },
+        "options": {
+          "propertiesUi": {
+            "propertyValues": []
+          }
+        }
+      },
+      "id": "53b979e8-d70c-49bf-999b-6b6e5e4fa288",
+      "name": "Upload QR to Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1232,
+        -448
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "txLKqS5hQ2mMXs1G",
+          "name": "Google Drive account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{$('Normalize Participant Data').item.json.email}}",
+        "subject": "=You're registered! Here's your entry QR code",
+        "message": "=Hi {{$('Normalize Participant Data').item.json.full_name}},<br><br>You're confirmed for {{$('Normalize Participant Data').item.json.event_id}} ({{$('Normalize Participant Data').item.json.session_choice}}).<br>Please bring the attached QR code for check-in at the venue.<br><br>See you there!",
+        "options": {
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {}
+            ]
+          }
+        }
+      },
+      "id": "073e987c-8af5-4f32-a312-7be76e245da3",
+      "name": "Send Confirmation Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1232,
+        -256
+      ],
+      "webhookId": "a1d5d88a-fd22-4026-ac98-a1f7d7d06fb0",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "HNwfOrqSg1tgqVVO",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "c3c8a95a-ef2b-444b-90f1-29baf6473bb2",
+      "name": "Log Duplicate (No-Op)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        784,
+        -160
+      ]
+    }
+  ],
+  "connections": {
+    "New Registration (Google Sheets Trigger)": {
+      "main": [
+        [
+          {
+            "node": "Normalize Participant Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Participant Data": {
+      "main": [
+        [
+          {
+            "node": "Check Duplicate Registration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Duplicate Registration": {
+      "main": [
+        [
+          {
+            "node": "IF Already Registered?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Already Registered?": {
+      "main": [
+        [
+          {
+            "node": "Log Duplicate (No-Op)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Save New Participant",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save New Participant": {
+      "main": [
+        [
+          {
+            "node": "Generate QR Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate QR Code": {
+      "main": [
+        [
+          {
+            "node": "Upload QR to Drive",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send Confirmation Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload QR to Drive": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "044b919db7625d2fee76928ddaf54d2be298128dfeeb9b1ab1addc1672c96a41"
+  }
+}

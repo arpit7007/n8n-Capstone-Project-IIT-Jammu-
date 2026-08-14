@@ -1,0 +1,544 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "event-completed",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "604d350c-0f1f-4613-8662-a05be89c0e5d",
+      "name": "Event Completed Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -896,
+        208
+      ],
+      "webhookId": "event-completed-endpoint"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1UQhQhNokO1-AzIHxKuPFsX15PY_8kpRbdninrAsKfBY",
+          "mode": "list",
+          "cachedResultName": "n8n-master",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1UQhQhNokO1-AzIHxKuPFsX15PY_8kpRbdninrAsKfBY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Participants",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1UQhQhNokO1-AzIHxKuPFsX15PY_8kpRbdninrAsKfBY/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "attendance",
+              "lookupValue": "true"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "041b7365-218f-40e8-959c-328dd9dd16c1",
+      "name": "Get Attendees Only",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -672,
+        128
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Jt4ztSmWtvy0enrU",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{$json.certificate_sent}}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "817046f5-4c84-42fa-9708-2d67452fb322",
+      "name": "Filter Not Yet Certified",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -448,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "batchSize": 5,
+        "options": {}
+      },
+      "id": "ad56a53f-3bf0-4c2a-a50c-00df6a492562",
+      "name": "Loop Over Attendees",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -224,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.pdfmonkey.io/api/v1/documents/sync",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "document_template_id",
+              "value": "375313FA-34FA-44FA-87DC-C9E28A22F494"
+            },
+            {
+              "name": "payload",
+              "value": "={{ { \"name\": $json.full_name, \"event\": $json.event_id, \"com_date\": $now.format('yyyy-MM-dd') } }}"
+            },
+            {
+              "name": "status",
+              "value": "pending"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "2add4a3f-78ad-47d7-91fe-ffec45df6a62",
+      "name": "Generate Certificate PDF",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -16,
+        144
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "I1lxB3jPJTlQ5pD3",
+          "name": "pdfMonkey"
+        },
+        "httpBearerAuth": {
+          "id": "zORoesON2R6jvQHu",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "name": "certificate",
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list",
+          "cachedResultName": "My Drive",
+          "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1PjKG3yROu5szkLJ9zqY7Kng68G9-CO7t",
+          "mode": "list",
+          "cachedResultName": "khuchToHaiYaar",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1PjKG3yROu5szkLJ9zqY7Kng68G9-CO7t"
+        },
+        "options": {}
+      },
+      "id": "3d2f2d40-53b4-4c82-a29c-da263e049413",
+      "name": "Upload Certificate to Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        384,
+        144
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "txLKqS5hQ2mMXs1G",
+          "name": "Google Drive account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{$('Loop Over Attendees').item.json.email}}",
+        "subject": "=Your certificate of participation",
+        "message": "=Hi {{$('Loop Over Attendees').item.json.full_name}},<br><br>Thanks for attending! Please find your certificate of participation attached.<br><br>Congratulations!",
+        "options": {}
+      },
+      "id": "92295511-f832-4645-9366-ed705566de64",
+      "name": "Email Certificate",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        576,
+        144
+      ],
+      "webhookId": "ea9461f4-678e-4bb8-a27a-ee9a7c918c79",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "HNwfOrqSg1tgqVVO",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1UQhQhNokO1-AzIHxKuPFsX15PY_8kpRbdninrAsKfBY",
+          "mode": "list",
+          "cachedResultName": "n8n-master",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1UQhQhNokO1-AzIHxKuPFsX15PY_8kpRbdninrAsKfBY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Participants",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "participant_id": "={{$('Loop Over Attendees').item.json.participant_id}}",
+            "certificate_sent": "true",
+            "row_number": 0
+          },
+          "matchingColumns": [
+            "participant_id"
+          ],
+          "schema": [
+            {
+              "id": "participant_id",
+              "displayName": "participant_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "full_name",
+              "displayName": "full_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "session_choice",
+              "displayName": "session_choice",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "registered_at",
+              "displayName": "registered_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "attendance",
+              "displayName": "attendance",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "checkin_time",
+              "displayName": "checkin_time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "reminder_sent",
+              "displayName": "reminder_sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "certificate_sent",
+              "displayName": "certificate_sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "e35bebe3-c3e0-4011-aef0-90f4ed2fa995",
+      "name": "Mark Certificate Sent",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        752,
+        144
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Jt4ztSmWtvy0enrU",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"status\": \"success\", \"message\": \"Certificate generation completed\"}",
+        "options": {}
+      },
+      "id": "ed4d401d-14ed-474f-8612-7fbe4a08fc01",
+      "name": "Respond Completed",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.2,
+      "position": [
+        -16,
+        -64
+      ]
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -896,
+        16
+      ],
+      "id": "9811dae1-1dfe-44fe-b595-43d9778433a8",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.document_card.download_url }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        192,
+        144
+      ],
+      "id": "e9c658d8-4601-479a-9eb9-cdf7046a2751",
+      "name": "download pdf"
+    }
+  ],
+  "connections": {
+    "Event Completed Webhook": {
+      "main": [
+        [
+          {
+            "node": "Get Attendees Only",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Attendees Only": {
+      "main": [
+        [
+          {
+            "node": "Filter Not Yet Certified",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Not Yet Certified": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Attendees",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Attendees": {
+      "main": [
+        [
+          {
+            "node": "Respond Completed",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Generate Certificate PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Certificate PDF": {
+      "main": [
+        [
+          {
+            "node": "download pdf",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Certificate to Drive": {
+      "main": [
+        [
+          {
+            "node": "Email Certificate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Certificate": {
+      "main": [
+        [
+          {
+            "node": "Mark Certificate Sent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark Certificate Sent": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Attendees",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get Attendees Only",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "download pdf": {
+      "main": [
+        [
+          {
+            "node": "Upload Certificate to Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "044b919db7625d2fee76928ddaf54d2be298128dfeeb9b1ab1addc1672c96a41"
+  }
+}
