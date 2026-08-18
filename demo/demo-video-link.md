@@ -5,7 +5,7 @@ This video demonstrates the complete AI-Powered Event Management Platform built 
 ## Demo Video
 
 **Watch here:**  
-https://drive.google.com/drive/folders/12BWSNZ0MIVOVzBh5_DIOJCMgHV3SuHKc?usp=drive_link
+[https://drive.google.com/drive/folders/12BWSNZ0MIVOVzBh5_DIOJCMgHV3SuHKc?usp=drive_link](https://drive.google.com/file/d/1jE18RhmNr2uk8RLDjWJTMI6xHLMiajEg/view?usp=sharing)
 
 ## Contents
 
